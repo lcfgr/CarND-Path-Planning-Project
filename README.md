@@ -1,23 +1,50 @@
 # CarND-Path-Planning-Project
-Self-Driving Car Engineer Nanodegree Program
-   
-### Simulator.
-You can download the Term3 Simulator which contains the Path Planning Project from the [releases tab (https://github.com/udacity/self-driving-car-sim/releases).
+Self-Driving Car Engineer Nanodegree Program   
 
 ### Goals
-In this project your goal is to safely navigate around a virtual highway with other traffic that is driving +-10 MPH of the 50 MPH speed limit. You will be provided the car's localization and sensor fusion data, there is also a sparse map list of waypoints around the highway. The car should try to go as close as possible to the 50 MPH speed limit, which means passing slower traffic when possible, note that other cars will try to change lanes too. The car should avoid hitting other cars at all cost as well as driving inside of the marked road lanes at all times, unless going from one lane to another. The car should be able to make one complete loop around the 6946m highway. Since the car is trying to go 50 MPH, it should take a little over 5 minutes to complete 1 loop. Also the car should not experience total acceleration over 10 m/s^2 and jerk that is greater than 50 m/s^3.
+In this project our goal is to safely navigate around a virtual highway with other traffic that is driving +-10 MPH of the 50 MPH speed limit. We are provided with the car's localization and sensor fusion data. There is also a sparse map list of waypoints around the highway. The car should try to go as close as possible to the 50 MPH speed limit, which means passing slower traffic when possible; note that other cars will try to change lanes too. The car should avoid hitting other cars at all cost as well as driving inside of the marked road lanes at all times, unless going from one lane to another. The car should be able to make one complete loop around the 6946m highway. Since the car is trying to go 50 MPH, it should take a little over 5 minutes to complete 1 loop. Also the car should not experience total 
+ration over 10 m/s^2 and jerk that is greater than 50 m/s^3.
+
+### Model Implementation
+
+The program is based on the logic provided by Udacity. In this first version, most of the values such as the speed limit,the maximum acceleration and jerk, path planning distance and steps are hardcoded. Other parameters which normally are dynamic are also hardcoded, such as the space gap required to do a lane change.
+
+For simplified calculations the Frenet plane is used. The path planning algorithm is composed by the following steps:   
+
+1. Retrieve the data from sensor fusion. Estimate the positioning of all the others cars for the distance used in path planning and populate 3 states, according to the possible scenarios:   
+* State 1 (too_close_front): There is a car in front of us that is closer than 25m   
+* State 2 (too_close_left):  There is a car in the lane change windows (25m in front and 10m in back) on our left lane, if there is one, that prevents us from using this lane   
+* State 3 (too_close_right): There is a car in the lane change window (25m in front and 10m in back) on our right lane, if there is one, that prevents us from using this lane   
+
+2. Collision Avoidance Decision   
+If there is a car that is near and in front of us, check if it is possible to pass it by changing into the left lane. If this is not possible, check if it is possible to pass it by changing into the right lane. If neither is possible, then reduce speed to keep a distance of 25m and continue to recheck for lane change possibilities.
+
+3. Plan the path   
+Use the spline library to create a spline with the use of 3 anchor points, the first at 30m, the second at 60m and the third at 90m. Create a list of 50 points for the path of the following 30m, according to the spline created that is updated in every time step.
+
+
+### Reflection
+The values that are hardcoded should be calculated through functions that can create more efficient movement and be used for variable conditions (speed limit, acceleration, etc).   
+Instead of using a constant distance for the path planning, it would be more efficient to use a constant time window, to accomodate a broader speed range.   
+A more complex algorithm for planning the change of lanes can be created; There is a situation which the current algorithm does not perform well. This situation arises when all 3 lanes are congested and the solution to safely overcome all the others cars would be to slow down to create enough distance and shift 2 lanes.   
+Ideally, an MPC controller will be created to feed the input of the path planner's output path. The same type of MPC controllers can be used to predict accurately the trajectory of all other cars and provide us with more possibilities of lane changes with no danger to collide with other cars.   
+
+
+### Results
+The algorithm fullfiles all the requirements of the Rubric:
+1. The car drives unlimited time without incidents   
+2. The car complies to the limitation of speed, max acceleration and jerk   
+3. The car does not have any collisions   
+4. The car stays in lane, except for the time between changing lanes   
+5. THe car is able to change lanes, when there is enough space and is needed   
+
+---
+### The simulator's information are presented below
 
 #### The map of the highway is in data/highway_map.txt
 Each waypoint in the list contains  [x,y,s,dx,dy] values. x and y are the waypoint's map coordinate position, the s value is the distance along the road to get to that waypoint in meters, the dx and dy values define the unit normal vector pointing outward of the highway loop.
 
 The highway's waypoints loop around so the frenet s value, distance along the road, goes from 0 to 6945.554.
-
-## Basic Build Instructions
-
-1. Clone this repo.
-2. Make a build directory: `mkdir build && cd build`
-3. Compile: `cmake .. && make`
-4. Run it: `./path_planning`.
 
 Here is the data provided from the Simulator to the C++ Program
 
@@ -54,19 +81,16 @@ the path has processed since last time.
 
 ["sensor_fusion"] A 2d vector of cars and then that car's [car's unique ID, car's x position in map coordinates, car's y position in map coordinates, car's x velocity in m/s, car's y velocity in m/s, car's s position in frenet coordinates, car's d position in frenet coordinates. 
 
-## Details
+#### Details
 
 1. The car uses a perfect controller and will visit every (x,y) point it recieves in the list every .02 seconds. The units for the (x,y) points are in meters and the spacing of the points determines the speed of the car. The vector going from a point to the next point in the list dictates the angle of the car. Acceleration both in the tangential and normal directions is measured along with the jerk, the rate of change of total Acceleration. The (x,y) point paths that the planner recieves should not have a total acceleration that goes over 10 m/s^2, also the jerk should not go over 50 m/s^3. (NOTE: As this is BETA, these requirements might change. Also currently jerk is over a .02 second interval, it would probably be better to average total acceleration over 1 second and measure jerk from that.
 
 2. There will be some latency between the simulator running and the path planner returning a path, with optimized code usually its not very long maybe just 1-3 time steps. During this delay the simulator will continue using points that it was last given, because of this its a good idea to store the last points you have used so you can have a smooth transition. previous_path_x, and previous_path_y can be helpful for this transition since they show the last points given to the simulator controller with the processed points already removed. You would either return a path that extends this previous path or make sure to create a new path that has a smooth transition with this last path.
-
-## Tips
-
 A really helpful resource for doing this project and creating smooth trajectories was using http://kluge.in-chemnitz.de/opensource/spline/, the spline function is in a single hearder file is really easy to use.
 
 ---
 
-## Dependencies
+#### Dependencies
 
 * cmake >= 3.5
  * All OSes: [click here for installation instructions](https://cmake.org/install/)
@@ -86,55 +110,3 @@ A really helpful resource for doing this project and creating smooth trajectorie
     cd uWebSockets
     git checkout e94b6e1
     ```
-
-## Editor Settings
-
-We've purposefully kept editor configuration files out of this repo in order to
-keep it as simple and environment agnostic as possible. However, we recommend
-using the following settings:
-
-* indent using spaces
-* set tab width to 2 spaces (keeps the matrices in source code aligned)
-
-## Code Style
-
-Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
-
-## Project Instructions and Rubric
-
-Note: regardless of the changes you make, your project must be buildable using
-cmake and make!
-
-
-## Call for IDE Profiles Pull Requests
-
-Help your fellow students!
-
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to ensure
-that students don't feel pressured to use one IDE or another.
-
-However! I'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
-
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
-
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
-
-Frankly, I've never been involved in a project with multiple IDE profiles
-before. I believe the best way to handle this would be to keep them out of the
-repo root to avoid clutter. My expectation is that most profiles will include
-instructions to copy files to a new location to get picked up by the IDE, but
-that's just a guess.
-
-One last note here: regardless of the IDE used, every submitted project must
-still be compilable with cmake and make./
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
-
