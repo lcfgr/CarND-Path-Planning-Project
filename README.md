@@ -20,15 +20,7 @@ For simplified calculations the Frenet plane is used. The path planning algorith
 If there is a car that is near and in front of us, check if it is possible to pass it by changing into the left lane. If this is not possible, check if it is possible to pass it by changing into the right lane. If neither is possible, then reduce speed to keep a distance of 25m and continue to recheck for lane change possibilities.
 
 3. Plan the path   
-Use the spline library to create a spline with the use of 3 anchor points, the first at 30m, the second at 60m and the third at 90m. Create a list of 50 points for the path of the following 30m, according to the spline created that is updated in every time step.
-
-
-### Reflection
-The values that are hardcoded should be calculated through functions that can create more efficient movement and be used for variable conditions (speed limit, acceleration, etc).   
-Instead of using a constant distance for the path planning, it would be more efficient to use a constant time window, to accomodate a broader speed range.   
-A more complex algorithm for planning the change of lanes can be created; There is a situation which the current algorithm does not perform well. This situation arises when all 3 lanes are congested and the solution to safely overcome all the others cars would be to slow down to create enough distance and shift 2 lanes.   
-Ideally, an MPC controller will be created to feed the input of the path planner's output path. The same type of MPC controllers can be used to predict accurately the trajectory of all other cars and provide us with more possibilities of lane changes with no danger to collide with other cars.   
-
+Use the spline library to create a spline with the use of 3 anchor points, the first at 30m, the second at 60m and the third at 90m. Create a list of 50 points for the path of the following 30m, according to the spline and update the list in every time step.
 
 ### Results
 The algorithm fullfiles all the requirements of the Rubric:
@@ -37,6 +29,12 @@ The algorithm fullfiles all the requirements of the Rubric:
 3. The car does not have any collisions   
 4. The car stays in lane, except for the time between changing lanes   
 5. THe car is able to change lanes, when there is enough space and is needed   
+
+### Reflection
+The values that are hardcoded should be calculated through functions that can create more efficient movement and be used for variable conditions (speed limit, acceleration, etc).   
+Instead of using a constant distance for the path planning, it would be more efficient to use a constant time window, to accomodate a broader speed range.   
+A more complex algorithm for planning the change of lanes can be created; There is a situation which the current algorithm does not perform well. This situation arises when all 3 lanes are congested and the solution to safely overcome all the others cars would be to slow down to create enough distance and shift 2 lanes.   
+Ideally, an MPC controller will be created to feed the input of the path planner's output path. The same type of MPC controllers can be used to predict accurately the trajectory of all other cars and provide us with more possibilities of lane changes with no danger to collide with other cars.   
 
 ---
 ### The simulator's information are presented below
